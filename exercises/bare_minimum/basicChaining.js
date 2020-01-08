@@ -8,13 +8,31 @@
  * HINT: We exported some similar promise-returning functions in previous exercises
  */
 
-var fs = require('fs');
 var Promise = require('bluebird');
-
+var github = require('./promisification');
+var firstLine = require('./promiseConstructor');
+var fs = Promise.promisifyAll(require('fs'));
 
 
 var fetchProfileAndWriteToFile = function(readFilePath, writeFilePath) {
-  // TODO
+  return firstLine.pluckFirstLineFromFileAsync(readFilePath)
+    .then(function(username) {
+      if (username) {
+        return username;
+      } else {
+        throw new Error('File does not exist!');
+      }
+    })
+    .then(function(currentUser) {
+      if (currentUser) {
+        return github.getGitHubProfileAsync(currentUser);
+      } else {
+        throw new Error('User does not exist in database!');
+      }
+    })
+    .then(function(response) {
+      return fs.writeFileAsync(writeFilePath, JSON.stringify(response));
+    });
 };
 
 // Export these functions so we can test them
